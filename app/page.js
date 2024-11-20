@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Moon, Sun, Lock } from "lucide-react";
 import md5 from "./components/MD5";
 import sha256 from "./components/SHA256";
@@ -13,62 +13,84 @@ export default function CryptoConverter() {
   const [theme, setTheme] = useState("light");
   const [rsaParams, setRsaParams] = useState({ p: "", q: "", e: "" });
   const [rsaKeys, setRsaKeys] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState("");
 
   const algorithms = ["md5", "sha256", "rsa"];
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
     setTheme(savedTheme);
-    if (savedTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    document.documentElement.classList.toggle("dark", savedTheme === "dark");
   }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  }, [theme]);
 
-  const encrypt = () => {
-    let result = "";
-    switch (selectedAlgo) {
-      case "md5":
-        result = md5(plainText);
-        break;
-      case "sha256":
-        result = sha256(plainText);
-        break;
-      case "rsa":
-        if (rsaParams.p && rsaParams.q && rsaParams.e) {
-          const keys = RSA.generateKeys(rsaParams.p, rsaParams.q, rsaParams.e);
-          setRsaKeys(keys);
-          result = RSA.rsaEncrypt(plainText, keys.publicKey);
-        } else {
-          result = "Please enter all RSA parameters";
+  const encrypt = useCallback(() => {
+    setIsProcessing(true);
+    setError("");
+
+    setTimeout(() => {
+      try {
+        let result = "";
+        switch (selectedAlgo) {
+          case "md5":
+            result = md5(plainText);
+            break;
+          case "sha256":
+            result = sha256(plainText);
+            break;
+          case "rsa":
+            if (rsaParams.p && rsaParams.q && rsaParams.e) {
+              const keys = RSA.generateKeys(
+                rsaParams.p,
+                rsaParams.q,
+                rsaParams.e
+              );
+              setRsaKeys(keys);
+              result = RSA.rsaEncrypt(plainText, keys.publicKey);
+            } else {
+              throw new Error("Please enter all RSA parameters");
+            }
+            break;
         }
-        break;
-    }
-    setCipherText(result);
-  };
+        setCipherText(result);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsProcessing(false);
+      }
+    }, 0);
+  }, [plainText, selectedAlgo, rsaParams]);
 
-  const decrypt = () => {
-    if (selectedAlgo === "rsa" && rsaKeys) {
-      const result = RSA.rsaDecrypt(cipherText, rsaKeys.privateKey);
-      setPlainText(result);
-    }
-  };
+  const decrypt = useCallback(() => {
+    setIsProcessing(true);
+    setError("");
 
-  const copyToClipboard = (text) => {
+    setTimeout(() => {
+      try {
+        if (selectedAlgo === "rsa" && rsaKeys) {
+          const result = RSA.rsaDecrypt(cipherText, rsaKeys.privateKey);
+          setPlainText(result);
+        } else {
+          throw new Error("Decryption is only available for RSA");
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsProcessing(false);
+      }
+    }, 0);
+  }, [cipherText, selectedAlgo, rsaKeys]);
+
+  const copyToClipboard = useCallback((text) => {
     navigator.clipboard.writeText(text);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
@@ -109,12 +131,12 @@ export default function CryptoConverter() {
               ))}
             </div>
             <div className="mb-4">
-              <input
-                type="text"
+              <textarea
                 value={plainText}
                 onChange={(e) => setPlainText(e.target.value)}
                 placeholder="Enter plain text"
                 className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white"
+                rows={4}
               />
             </div>
             {selectedAlgo === "rsa" && (
@@ -151,9 +173,10 @@ export default function CryptoConverter() {
             <div className="mb-4 flex gap-2">
               <button
                 onClick={encrypt}
-                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200"
+                disabled={isProcessing}
+                className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 disabled:bg-gray-400"
               >
-                Encrypt
+                {isProcessing ? "Processing..." : "Encrypt"}
               </button>
               <button
                 onClick={() => copyToClipboard(cipherText)}
@@ -162,6 +185,7 @@ export default function CryptoConverter() {
                 Copy Cipher Text
               </button>
             </div>
+            {error && <p className="text-red-500 mb-4">{error}</p>}
             <div>
               <textarea
                 value={cipherText}
@@ -177,20 +201,21 @@ export default function CryptoConverter() {
                 Decryption
               </h2>
               <div className="mb-4">
-                <input
-                  type="text"
+                <textarea
                   value={cipherText}
                   onChange={(e) => setCipherText(e.target.value)}
                   placeholder="Enter cipher text"
                   className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white"
+                  rows={4}
                 />
               </div>
               <div className="mb-4">
                 <button
                   onClick={decrypt}
-                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200"
+                  disabled={isProcessing}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 disabled:bg-gray-400"
                 >
-                  Decrypt
+                  {isProcessing ? "Processing..." : "Decrypt"}
                 </button>
               </div>
               <div>

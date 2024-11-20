@@ -34,14 +34,12 @@ Crypto Message Converter is a web application built with Next.js and Tailwind CS
 
 ```shellscript
  cd crypto-toolkit-app
-
 ```
 
 3. Install the dependencies:
 
 ```shellscript
  npm install
-
 ```
 
 ### Running the Application
@@ -50,7 +48,6 @@ To run the application in development mode:
 
 ```shellscript
  npm run dev
-
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
@@ -61,14 +58,12 @@ To create a production build:
 
 ```shellscript
  npm run build
-
 ```
 
 To start the production server:
 
 ```shellscript
  npm start
-
 ```
 
 ## Usage

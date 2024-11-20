@@ -97,7 +97,7 @@ export default function CryptoConverter() {
       <div className="container mx-auto p-4 max-w-6xl">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-            Crypto Message Converter
+            Crypto Toolkit App
           </h1>
           <button
             onClick={toggleTheme}

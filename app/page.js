@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Moon, Sun, Lock } from "lucide-react";
 import md5 from "./components/MD5";
 import sha256 from "./components/SHA256";
-import RSA from "./components/RSA";
+import * as RSA from './components/RSA';
+
 
 export default function CryptoConverter() {
   const [selectedAlgo, setSelectedAlgo] = useState("md5");

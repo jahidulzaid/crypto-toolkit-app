@@ -1,14 +1,20 @@
+// app/components/MD5.js
+
+// The md5 function computes the MD5 hash of a given string.
 function md5(str) {
+  // rotateLeft shifts bits to the left and wraps around.
   function rotateLeft(lValue, shiftBits) {
     return (lValue << shiftBits) | (lValue >>> (32 - shiftBits));
   }
 
+  // addUnsigned adds two unsigned 32-bit integers and handles overflow.
   function addUnsigned(lX, lY) {
-    const lX4 = lX & 0x40000000;
-    const lY4 = lY & 0x40000000;
-    const lX8 = lX & 0x80000000;
-    const lY8 = lY & 0x80000000;
-    const result = (lX & 0x3fffffff) + (lY & 0x3fffffff);
+    const lX4 = lX & 0x40000000; // Check if the 30th bit is set
+    const lY4 = lY & 0x40000000; // Check if the 30th bit is set
+    const lX8 = lX & 0x80000000; // Check if the 31st bit is set
+    const lY8 = lY & 0x80000000; // Check if the 31st bit is set
+    const result = (lX & 0x3fffffff) + (lY & 0x3fffffff); // Add lower 30 bits
+    // Handle overflow cases
     if (lX4 & lY4) return result ^ 0x80000000 ^ lX8 ^ lY8;
     if (lX4 | lY4) {
       if (result & 0x40000000) {
@@ -21,6 +27,7 @@ function md5(str) {
     }
   }
 
+  // F, G, H, I are the four basic MD5 functions.
   function F(x, y, z) {
     return (x & y) | (~x & z);
   }
@@ -37,11 +44,13 @@ function md5(str) {
     return y ^ (x | ~z);
   }
 
+  // transform applies a single MD5 transformation.
   function transform(func, a, b, c, d, x, s, ac) {
     a = addUnsigned(a, addUnsigned(addUnsigned(func(b, c, d), x), ac));
     return addUnsigned(rotateLeft(a, s), b);
   }
 
+  // convertToWordArray converts a string to an array of 32-bit words.
   function convertToWordArray(string) {
     let lWordCount;
     const lMessageLength = string.length;
@@ -53,6 +62,7 @@ function md5(str) {
     let lBytePosition = 0;
     let lByteCount = 0;
 
+    // Convert each character to a word
     while (lByteCount < lMessageLength) {
       lWordCount = (lByteCount - (lByteCount % 4)) / 4;
       lBytePosition = (lByteCount % 4) * 8;
@@ -63,35 +73,39 @@ function md5(str) {
       lByteCount++;
     }
 
+    // Add padding
     lWordCount = (lByteCount - (lByteCount % 4)) / 4;
     lBytePosition = (lByteCount % 4) * 8;
     lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
-    lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
-    lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
+    lWordArray[lNumberOfWords - 2] = lMessageLength << 3; // Message length in bits
+    lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29; // Message length in bits
     return lWordArray;
   }
 
+  // wordToHex converts a 32-bit word to a hexadecimal string.
   function wordToHex(lValue) {
     let wordToHexValue = "";
     let wordToHexValueTemp = "";
     let lByte;
     let lCount;
     for (lCount = 0; lCount <= 3; lCount++) {
-      lByte = (lValue >>> (lCount * 8)) & 255;
-      wordToHexValueTemp = "0" + lByte.toString(16);
+      lByte = (lValue >>> (lCount * 8)) & 255; // Extract each byte
+      wordToHexValueTemp = "0" + lByte.toString(16); // Convert to hex
       wordToHexValue =
         wordToHexValue +
-        wordToHexValueTemp.substr(wordToHexValueTemp.length - 2, 2);
+        wordToHexValueTemp.substr(wordToHexValueTemp.length - 2, 2); // Append last two hex digits
     }
     return wordToHexValue;
   }
 
-  const x = convertToWordArray(str);
-  let a = 0x67452301;
-  let b = 0xefcdab89;
-  let c = 0x98badcfe;
-  let d = 0x10325476;
+  // Initialize variables for MD5 computation
+  const x = convertToWordArray(str); // Convert input string to word array
+  let a = 0x67452301; // Initial hash value
+  let b = 0xefcdab89; // Initial hash value
+  let c = 0x98badcfe; // Initial hash value
+  let d = 0x10325476; // Initial hash value
 
+  // Constants for MD5 transformations
   const S11 = 7,
     S12 = 12,
     S13 = 17,
@@ -109,11 +123,14 @@ function md5(str) {
     S43 = 15,
     S44 = 21;
 
+  // Main loop for MD5 transformations
   for (let k = 0; k < x.length; k += 16) {
-    const AA = a;
-    const BB = b;
-    const CC = c;
-    const DD = d;
+    const AA = a; // Save original a
+    const BB = b; // Save original b
+    const CC = c; // Save original c
+    const DD = d; // Save original d
+
+    // Perform transformations using the four functions
     a = transform(F, a, b, c, d, x[k + 0], S11, 0xd76aa478);
     d = transform(F, d, a, b, c, x[k + 1], S12, 0xe8c7b756);
     c = transform(F, c, d, a, b, x[k + 2], S13, 0x242070db);
@@ -131,6 +148,7 @@ function md5(str) {
     c = transform(F, c, d, a, b, x[k + 14], S13, 0xa679438e);
     b = transform(F, b, c, d, a, x[k + 15], S14, 0x49b40821);
 
+    // Continue with G, H, I transformations
     a = transform(G, a, b, c, d, x[k + 1], S21, 0xf61e2562);
     d = transform(G, d, a, b, c, x[k + 6], S22, 0xc040b340);
     c = transform(G, c, d, a, b, x[k + 11], S23, 0x265e5a51);
@@ -182,18 +200,21 @@ function md5(str) {
     c = transform(I, c, d, a, b, x[k + 2], S43, 0x2ad7d2bb);
     b = transform(I, b, c, d, a, x[k + 9], S44, 0xeb86d391);
 
+    // Add the results of this chunk to the previous hash values
     a = addUnsigned(a, AA);
     b = addUnsigned(b, BB);
     c = addUnsigned(c, CC);
     d = addUnsigned(d, DD);
   }
 
+  // Produce the final MD5 hash value as a hexadecimal string
   const md5Hash = wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d);
-  return md5Hash.toLowerCase();
+  return md5Hash.toLowerCase(); // Return the hash in lowercase
 }
 
 // Test MD5 Hash Function
-console.log("MD5 Hash of 'hello':", md5("hello"));
-console.log("MD5 Hash of 'maruf':", md5("maruf"));
+console.log("MD5 Hash of 'hello':", md5("hello")); // Example test
+console.log("MD5 Hash of 'maruf':", md5("maruf")); // Example test
 
+// Export the md5 function for use in other modules
 export default md5;

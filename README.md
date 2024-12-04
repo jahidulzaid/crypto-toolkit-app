@@ -1,6 +1,6 @@
-# Crypto Message Converter
+# Crypto Toolkit App
 
-Crypto Message Converter is a web application built with Next.js and Tailwind CSS that allows users to encrypt and decrypt messages using various cryptographic algorithms. The application features a responsive design with both light and dark themes.
+Crypto Toolkit App is a web application built with Next.js and Tailwind CSS that allows users to encrypt and decrypt messages using various cryptographic algorithms. The application features a responsive design with both light and dark themes.
 
 ## Features
 
@@ -27,7 +27,7 @@ Crypto Message Converter is a web application built with Next.js and Tailwind CS
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/mdmarufsarker/crypto-toolkit-app.git
+   git clone https://github.com/your-username/crypto-toolkit-app.git
    ```
 
 2. Navigate to the project directory:

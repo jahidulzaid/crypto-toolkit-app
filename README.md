@@ -6,7 +6,7 @@ Crypto Message Converter is a web application built with Next.js and Tailwind CS
 
 - Support for multiple encryption algorithms:
   - MD5 (one-way hash)
-  - SHA256 (one-way hash)
+  - Playfair (one-way hash)
   - RSA (public-key cryptography)
 - Real-time encryption and decryption
 - Optimized algorithm implementations for better performance
@@ -68,8 +68,8 @@ To start the production server:
 
 ## Usage
 
-1. Select an encryption algorithm from the available options (MD5, SHA256, or RSA).
-2. For MD5 and SHA256:
+1. Select an encryption algorithm from the available options (MD5, Playfair, RSA).
+2. For MD5 and Playfair:
 
 3. Enter the text you want to hash in the input field
 4. Click "Encrypt" to generate the hash
@@ -98,7 +98,7 @@ To start the production server:
 
 - Efficient implementations of cryptographic algorithms using:
 
-- TypedArrays (Uint32Array) for MD5 and SHA256
+- TypedArrays (Uint32Array) for MD5 and Playfair
 - BigInt for RSA calculations
 
 - Asynchronous processing to prevent UI blocking
@@ -111,7 +111,7 @@ To start the production server:
 The cryptographic implementations in this project are for educational purposes only and should not be used for securing sensitive information. In particular:
 
 - MD5 is considered cryptographically broken and should not be used for secure hashing
-- SHA256 is secure but should be used with a proper salt for password hashing
+- Playfair is secure but should be used with a proper salt for password hashing
 - The RSA implementation is simplified and uses smaller key sizes than recommended for real-world applications
 
 ## Contributing

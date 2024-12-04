@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Moon, Sun, Lock } from "lucide-react";
 import md5 from "./components/MD5";
 import * as RSA from "./components/RSA";
-import { playfairEncrypt } from "./components/PLAYFAIR";
+import { playfairDecrypt, playfairEncrypt } from "./components/PLAYFAIR";
 
 export default function CryptoConverter() {
   const [selectedAlgo, setSelectedAlgo] = useState("md5");
@@ -78,7 +78,10 @@ export default function CryptoConverter() {
           const result = RSA.rsaDecrypt(cipherText, rsaKeys.privateKey);
           setPlainText(result);
         } else {
-          throw new Error("Decryption is only available for RSA");
+          if (selectedAlgo === "playfair") {
+            const result = playfairDecrypt(keyWord, cipherText);
+            setPlainText(result);
+          }
         }
       } catch (err) {
         setError(err.message);
@@ -206,6 +209,38 @@ export default function CryptoConverter() {
             </div>
           </div>
           {selectedAlgo === "rsa" ? (
+            <div className="w-full lg:w-1/2 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
+                Decryption
+              </h2>
+              <div className="mb-4">
+                <textarea
+                  value={cipherText}
+                  onChange={(e) => setCipherText(e.target.value)}
+                  placeholder="Enter cipher text"
+                  className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white"
+                  rows={4}
+                />
+              </div>
+              <div className="mb-4">
+                <button
+                  onClick={decrypt}
+                  disabled={isProcessing}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 disabled:bg-gray-400"
+                >
+                  {isProcessing ? "Processing..." : "Decrypt"}
+                </button>
+              </div>
+              <div>
+                <textarea
+                  value={plainText}
+                  readOnly
+                  className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white"
+                  rows={4}
+                />
+              </div>
+            </div>
+          ) : selectedAlgo === "playfair" ? (
             <div className="w-full lg:w-1/2 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
               <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
                 Decryption

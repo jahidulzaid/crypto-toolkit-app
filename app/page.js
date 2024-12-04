@@ -1,15 +1,14 @@
 "use client";
-
 import { useState, useEffect, useCallback } from "react";
 import { Moon, Sun, Lock } from "lucide-react";
 import md5 from "./components/MD5";
-import sha256 from "./components/SHA256";
-import * as RSA from './components/RSA';
-
+import * as RSA from "./components/RSA";
+import { playfairEncrypt } from "./components/PLAYFAIR";
 
 export default function CryptoConverter() {
   const [selectedAlgo, setSelectedAlgo] = useState("md5");
   const [plainText, setPlainText] = useState("");
+  const [keyWord, setKeyWord] = useState("");
   const [cipherText, setCipherText] = useState("");
   const [theme, setTheme] = useState("light");
   const [rsaParams, setRsaParams] = useState({ p: "", q: "", e: "" });
@@ -17,7 +16,7 @@ export default function CryptoConverter() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
 
-  const algorithms = ["md5", "sha256", "rsa"];
+  const algorithms = ["md5", "playfair", "rsa"];
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
@@ -43,8 +42,8 @@ export default function CryptoConverter() {
           case "md5":
             result = md5(plainText);
             break;
-          case "sha256":
-            result = sha256(plainText);
+          case "playfair":
+            result = playfairEncrypt(keyWord, plainText);
             break;
           case "rsa":
             if (rsaParams.p && rsaParams.q && rsaParams.e) {
@@ -131,6 +130,16 @@ export default function CryptoConverter() {
                 </button>
               ))}
             </div>
+            {selectedAlgo === "playfair" ? (
+              <div className="w-full items-center justify-center py-4">
+                <input
+                  value={keyWord}
+                  onChange={(e) => setKeyWord(e.target.value)}
+                  placeholder="Enter keyword"
+                  className="p-2 w-full"
+                />
+              </div>
+            ) : null}
             <div className="mb-4">
               <textarea
                 value={plainText}

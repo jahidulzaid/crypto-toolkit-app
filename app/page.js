@@ -2,8 +2,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { Moon, Sun, Lock } from "lucide-react";
 import md5 from "./components/MD5";
+<<<<<<< HEAD
+import sha256 from "./components/SHA256";
+import { base64Encode, base64Decode } from "./components/Base64";
+import * as RSA from "./components/RSA";
+=======
 import * as RSA from "./components/RSA";
 import { playfairDecrypt, playfairEncrypt } from "./components/PLAYFAIR";
+>>>>>>> b32da1a791d6d6459375fd22cf979c5983a89040
 
 export default function CryptoConverter() {
   const [selectedAlgo, setSelectedAlgo] = useState("md5");
@@ -16,7 +22,11 @@ export default function CryptoConverter() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
 
+<<<<<<< HEAD
+  const algorithms = ["md5", "sha256", "rsa", "base64"];
+=======
   const algorithms = ["md5", "playfair", "rsa"];
+>>>>>>> b32da1a791d6d6459375fd22cf979c5983a89040
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") || "light";
@@ -58,6 +68,9 @@ export default function CryptoConverter() {
               throw new Error("Please enter all RSA parameters");
             }
             break;
+          case "base64":
+            result = base64Encode(plainText);
+            break;
         }
         setCipherText(result);
       } catch (err) {
@@ -77,11 +90,18 @@ export default function CryptoConverter() {
         if (selectedAlgo === "rsa" && rsaKeys) {
           const result = RSA.rsaDecrypt(cipherText, rsaKeys.privateKey);
           setPlainText(result);
+        } else if (selectedAlgo === "base64") {
+          const result = base64Decode(cipherText);
+          setPlainText(result);
         } else {
+<<<<<<< HEAD
+          throw new Error("Decryption is only available for RSA and Base64");
+=======
           if (selectedAlgo === "playfair") {
             const result = playfairDecrypt(keyWord, cipherText);
             setPlainText(result);
           }
+>>>>>>> b32da1a791d6d6459375fd22cf979c5983a89040
         }
       } catch (err) {
         setError(err.message);
@@ -112,11 +132,13 @@ export default function CryptoConverter() {
         <div className="flex flex-col lg:flex-row gap-8">
           <div
             className={`w-full ${
-              selectedAlgo === "rsa" ? "lg:w-1/2" : ""
+              selectedAlgo === "rsa" || selectedAlgo === "base64"
+                ? "lg:w-1/2"
+                : ""
             } p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md`}
           >
             <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
-              Encryption
+              {selectedAlgo === "base64" ? "Encoding" : "Encryption"}
             </h2>
             <div className="mb-4 flex flex-wrap gap-2">
               {algorithms.map((algo) => (
@@ -189,7 +211,11 @@ export default function CryptoConverter() {
                 disabled={isProcessing}
                 className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 disabled:bg-gray-400"
               >
-                {isProcessing ? "Processing..." : "Encrypt"}
+                {isProcessing
+                  ? "Processing..."
+                  : selectedAlgo === "base64"
+                  ? "Encode"
+                  : "Encrypt"}
               </button>
               <button
                 onClick={() => copyToClipboard(cipherText)}
@@ -208,10 +234,10 @@ export default function CryptoConverter() {
               />
             </div>
           </div>
-          {selectedAlgo === "rsa" ? (
+          {selectedAlgo === "rsa" || selectedAlgo === "base64" ? (
             <div className="w-full lg:w-1/2 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
               <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
-                Decryption
+                {selectedAlgo === "base64" ? "Decoding" : "Decryption"}
               </h2>
               <div className="mb-4">
                 <textarea
@@ -228,7 +254,11 @@ export default function CryptoConverter() {
                   disabled={isProcessing}
                   className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors duration-200 disabled:bg-gray-400"
                 >
-                  {isProcessing ? "Processing..." : "Decrypt"}
+                  {isProcessing
+                    ? "Processing..."
+                    : selectedAlgo === "base64"
+                    ? "Decode"
+                    : "Decrypt"}
                 </button>
               </div>
               <div>
